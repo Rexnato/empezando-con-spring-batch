@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -18,6 +19,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 //Indica al contedor de beans de spring que la gestione
 @Configuration
+@EnableBatchProcessing
 public class DirectionsSincronitationJob {
 	
 	Logger logger = LoggerFactory.getLogger(this.getClass());
