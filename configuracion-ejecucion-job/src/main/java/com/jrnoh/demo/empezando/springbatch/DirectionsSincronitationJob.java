@@ -19,7 +19,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 //Indica al contedor de beans de spring que la gestione
 @Configuration
-@EnableBatchProcessing
+@EnableBatchProcessing()
 public class DirectionsSincronitationJob {
 	
 	public static final String  NAME_JOB = "directionsSincronizationJob";
