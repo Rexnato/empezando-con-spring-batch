@@ -20,12 +20,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class DirectionsSincronitationJob {
 	
+	public static final String  NAME_JOB = "directionsSincronizationJob";
+	
 	Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	//Job que representa el batch en el contedor
 	@Bean
 	public Job sincronationDirection(JobRepository jobRepository,TaskletStep initStep) {
-		return new JobBuilder("directionsSincronitationJob", jobRepository)
+		return new JobBuilder(NAME_JOB, jobRepository)
 		.start(initStep) //Tarea que realizara el job
 		.build();
 	}
