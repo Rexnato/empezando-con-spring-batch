@@ -22,14 +22,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 @EnableBatchProcessing
 public class DirectionsSincronitationJob {
 	
-	public static String  nameJob = "directionsSincronizationJob";
+	public static final String  NAME_JOB = "directionsSincronizationJob";
 	
 	Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	//Job que representa el batch en el contedor
 	@Bean
 	public Job sincronationDirection(JobRepository jobRepository,TaskletStep initStep) {
-		return new JobBuilder(nameJob, jobRepository)
+		return new JobBuilder(NAME_JOB, jobRepository)
 		.start(initStep) //Tarea que realizara el job
 		.build();
 	}
