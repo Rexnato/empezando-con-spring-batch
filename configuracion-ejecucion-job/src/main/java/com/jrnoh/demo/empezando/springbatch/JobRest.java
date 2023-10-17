@@ -7,16 +7,25 @@ import java.util.HashMap;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+/***
+ * 
+ * @author jnoh
+ *
+ */
 
 @RestController
 @RequestMapping("/job")
@@ -28,6 +37,9 @@ public class JobRest {
 	@Autowired
 	Job job;
 	
+	@Autowired
+	JobExplorer jobExplorer;
+	
 	/**
 	 * Lanza un job 
 	 * 
@@ -35,7 +47,7 @@ public class JobRest {
 	 	curl --location --request POST 'http://localhost:8080/job/ejecutar' \
 		--header 'Content-Type: application/json' \
 		--data-raw '{
-		   "account" : "145580040250001980"
+		   "fecha" : "2023-10-16"
 		}
 		'
 	 * 
@@ -58,19 +70,32 @@ public class JobRest {
 			
 			var jobExecution = jobLauncher.run(job, jobParametersBuilder.toJobParameters());
 			
-			response.put("jobId", jobExecution.getJobId());
+			response.put("jobId", jobExecution.getId());
 			
 		} catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException
-				| JobParametersInvalidException e) 
+				| JobParametersInvalidException e ) 
 		{
 			response.put("errorMessage :", e.getMessage());
 			
 		}catch (Exception e) {
-			response.put("errorMessage :", e.getMessage());
+			response.put("errorMessage :", "Ocurrio un error no controlado");
 		}
 		
 		return ResponseEntity.ok(response);
 		
+	}
+	
+	
+	/***
+	 curl --location 'http://localhost:8080/job/job-execution/poneridaca' \
+	 * @return
+	 */
+	@GetMapping("/job-execution/{jobExecutionId}")
+	public ResponseEntity<String> obtenerJobsInstances(@PathVariable Long jobExecutionId){
+		
+		var jobExecution =  jobExplorer.getJobExecution(jobExecutionId);
+		
+		return ResponseEntity.ok(jobExecution == null ? "" : jobExecution.toString());
 	}
 
 }
