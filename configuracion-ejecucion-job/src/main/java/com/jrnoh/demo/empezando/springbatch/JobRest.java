@@ -31,12 +31,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/job")
 public class JobRest {
 	
+	
+	/***
+	 * Servicio que me permite realizar el disparo de un job 
+	 */
 	@Autowired
 	JobLauncher jobLauncher;
 	
+	/***
+	 * Inyeccion de mi job
+	 */
 	@Autowired
 	Job job;
 	
+	/**
+	 * Servicio para consultar el JobRepository y todas las entidades del modelo 
+	 * funcionalidades ahi 
+	 */
 	@Autowired
 	JobExplorer jobExplorer;
 	
@@ -64,10 +75,13 @@ public class JobRest {
 		var response = new HashMap<String,Object>();
 		
 		try {
+			
+			//Obtencion de los parametros y creacion de JobParametros por builder
 			var fecha = new SimpleDateFormat("yyyy-MM-dd").parse(request.get("fecha").toString());
 			var jobParametersBuilder = new JobParametersBuilder()
 					.addDate("fecha", fecha);
 			
+			//Ejecucion Job por medio de job launcher 
 			var jobExecution = jobLauncher.run(job, jobParametersBuilder.toJobParameters());
 			
 			response.put("jobId", jobExecution.getId());
@@ -75,6 +89,7 @@ public class JobRest {
 		} catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException
 				| JobParametersInvalidException e ) 
 		{
+			// Error en caso ya exista recordar los conceptos de JobInstance , JobParameter y JobExecution
 			response.put("errorMessage :", e.getMessage());
 			
 		}catch (Exception e) {
@@ -87,12 +102,14 @@ public class JobRest {
 	
 	
 	/***
+	 * Consulta por modelo
 	 curl --location 'http://localhost:8080/job/job-execution/poneridaca' \
 	 * @return
 	 */
 	@GetMapping("/job-execution/{jobExecutionId}")
 	public ResponseEntity<String> obtenerJobsInstances(@PathVariable Long jobExecutionId){
 		
+		//Se consulta por medio del servicio que provee Spring Batch , se usa la interfaz Job Explorer cuando se crea el job tenemos un JobInstance.Id
 		var jobExecution =  jobExplorer.getJobExecution(jobExecutionId);
 		
 		return ResponseEntity.ok(jobExecution == null ? "" : jobExecution.toString());
