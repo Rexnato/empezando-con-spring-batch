@@ -74,7 +74,7 @@ public class DirectionsSincronitationJob {
 			, RepositoryItemWriter<Direction> writerDirections) {
 		
 		return new StepBuilder("importDirections",jobRepository)
-		.<DirectionRecord,Direction>chunk(0, p)
+		.<DirectionRecord,Direction>chunk(10, p)//fragmentos de 10 
 		.reader(fileReaderDirections)
 		.processor(procesorDirections)
 		.writer(writerDirections)
