@@ -21,7 +21,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.PlatformTransactionManager;
 
 
@@ -39,7 +38,7 @@ public class DirectionsSincronitationJob {
 	public Job sincronationDirection(JobRepository jobRepository,TaskletStep initStep,Step importDirections) {
 		return new JobBuilder(NAME_JOB, jobRepository)
 		.start(initStep) //Tarea que realizara el job
-		.next(initStep)
+		.next(importDirections)
 		.build();
 	}
 	
