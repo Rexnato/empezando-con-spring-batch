@@ -58,6 +58,15 @@ public class DirectionsSincronitationJob {
 				.build();
 	}
 	
+	/***
+	 * Paso generado para la importacion de las direcciones
+	 * @param jobRepository
+	 * @param p
+	 * @param fileReaderDirections
+	 * @param procesorDirections
+	 * @param writerDirections
+	 * @return
+	 */
 	@Bean
 	public Step importDirections(JobRepository jobRepository,PlatformTransactionManager p
 			,FlatFileItemReader<DirectionRecord> fileReaderDirections
@@ -72,21 +81,26 @@ public class DirectionsSincronitationJob {
 		.build();
 	}
 	
+	/***
+	 * Lectura del archivo
+	 * @return
+	 */
 	@Bean
 	public FlatFileItemReader<DirectionRecord> fileReaderDirections(){
 		
 		return new FlatFileItemReaderBuilder<DirectionRecord>()
 				.name("fileReaderDirections")
-				.resource(new FileSystemResource("staging/directions.csv"))
+				.resource(new FileSystemResource("staging/directions.csv")) // ubicacion del archivo
 				.delimited()
 				.names("codigoPostal","asentamiento","tipoAsentamiento","municipio")
-				.targetType(DirectionRecord.class)
+				.targetType(DirectionRecord.class) // clase en la que se vacia el cisv
 				.build();
 	}
 	
 	@Bean
 	public ItemProcessor<DirectionRecord, Direction> procesorDirections(){
 		
+		//convierte el direction record a una direction (entidad)
 		return new ItemProcessor<DirectionRecord, Direction>() {
 
 			@Override
@@ -103,6 +117,11 @@ public class DirectionsSincronitationJob {
 		};
 	}
 	
+	/***
+	 * Se encarga de persistir por entidades 
+	 * @param directionRepository
+	 * @return
+	 */
 	@Bean
 	public RepositoryItemWriter<Direction> writerDirections(DirectionRepository directionRepository){
 		
