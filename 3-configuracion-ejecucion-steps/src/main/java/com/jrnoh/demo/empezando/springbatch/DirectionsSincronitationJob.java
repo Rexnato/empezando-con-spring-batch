@@ -12,12 +12,16 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.data.RepositoryItemWriter;
+import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.PlatformTransactionManager;
 
 
@@ -56,25 +60,56 @@ public class DirectionsSincronitationJob {
 	}
 	
 	@Bean
-	public Step importDirections(JobRepository jobRepository,PlatformTransactionManager p) {
+	public Step importDirections(JobRepository jobRepository,PlatformTransactionManager p
+			,FlatFileItemReader<DirectionRecord> fileReaderDirections
+			,ItemProcessor<DirectionRecord, Direction> procesorDirections
+			, RepositoryItemWriter<Direction> writerDirections) {
 		
 		return new StepBuilder("importDirections",jobRepository)
-		.chunk(10, p)
-		.reader(fileReaderDirections())
-		.writer(null)
+		.<DirectionRecord,Direction>chunk(0, p)
+		.reader(fileReaderDirections)
+		.processor(procesorDirections)
+		.writer(writerDirections)
 		.build();
 	}
 	
 	@Bean
-	public FlatFileItemReader<Direction> fileReaderDirections(){
+	public FlatFileItemReader<DirectionRecord> fileReaderDirections(){
 		
-		return new FlatFileItemReaderBuilder<Direction>()
+		return new FlatFileItemReaderBuilder<DirectionRecord>()
 				.name("fileReaderDirections")
 				.resource(new FileSystemResource("staging/directions.csv"))
 				.delimited()
 				.names("codigoPostal","asentamiento","tipoAsentamiento","municipio")
-				.targetType(Direction.class)
+				.targetType(DirectionRecord.class)
 				.build();
+	}
+	
+	@Bean
+	public ItemProcessor<DirectionRecord, Direction> procesorDirections(){
+		
+		return new ItemProcessor<DirectionRecord, Direction>() {
+
+			@Override
+			public Direction process(DirectionRecord d) throws Exception {
+				Direction direction = new Direction();
+				direction.setAsentamiento(d.asentamiento());
+				direction.setCodigoPostal(d.codigoPostal());
+				direction.setMunicipio(d.municipio());
+				direction.setTipoAsentamiento(d.tipoAsentamiento());
+				
+				return direction;
+			}
+				
+		};
+	}
+	
+	@Bean
+	public RepositoryItemWriter<Direction> writerDirections(DirectionRepository directionRepository){
+		
+		return new RepositoryItemWriterBuilder<Direction>()
+		.repository(directionRepository)
+		.build();
 	}
 
 }
