@@ -3,6 +3,7 @@ package com.jrnoh.demo.empezando.springbatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -11,9 +12,12 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
 
 
@@ -28,9 +32,10 @@ public class DirectionsSincronitationJob {
 	
 	//Job que representa el batch en el contedor
 	@Bean
-	public Job sincronationDirection(JobRepository jobRepository,TaskletStep initStep) {
+	public Job sincronationDirection(JobRepository jobRepository,TaskletStep initStep,Step importDirections) {
 		return new JobBuilder(NAME_JOB, jobRepository)
 		.start(initStep) //Tarea que realizara el job
+		.next(initStep)
 		.build();
 	}
 	
@@ -47,6 +52,28 @@ public class DirectionsSincronitationJob {
 						return RepeatStatus.FINISHED;
 					}
 				}, p)
+				.build();
+	}
+	
+	@Bean
+	public Step importDirections(JobRepository jobRepository,PlatformTransactionManager p) {
+		
+		return new StepBuilder("importDirections",jobRepository)
+		.chunk(10, p)
+		.reader(fileReaderDirections())
+		.writer(null)
+		.build();
+	}
+	
+	@Bean
+	public FlatFileItemReader<Direction> fileReaderDirections(){
+		
+		return new FlatFileItemReaderBuilder<Direction>()
+				.name("fileReaderDirections")
+				.resource(new FileSystemResource("staging/directions.csv"))
+				.delimited()
+				.names("codigoPostal","asentamiento","tipoAsentamiento","municipio")
+				.targetType(Direction.class)
 				.build();
 	}
 
